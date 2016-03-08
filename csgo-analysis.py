@@ -28,6 +28,13 @@ from tqdm import tqdm
 
 plt.style.use('ggplot')
 
+# TODO LIST:
+# Define a external file of configuration to:
+# 1. Top Teams
+# 2. Top Players
+# 3. Plot method: plotly, matplotlib
+# 4. 
+
 def getTeams():
 	teams = list()
 	teams.append('fnatic')
@@ -97,114 +104,7 @@ def getPlayers():
 	players.append('navizeus4444')
 	return [p.lower() for p in players]
 
-def plotlyTwitchViewersAlternative(filename):
-	houroffset = 2
-	dictTimeline = dict() # channel, timestamp, viewers
-	fileinput = open(filename, 'r')
-	settimeline = set()
-	for line in fileinput:
-		line = line.replace('\n', '')
-		dictRegister = eval(line)
-		timestampkey = dictRegister['timestamp']
-		timestampkey = timestampkey + datetime.timedelta(hours=houroffset)
-		timestampkey = timestampkey.strftime('%Y-%m-%d %H%:%M:00')
-		settimeline.add(timestampkey)
-		channel = dictRegister['stream']['channel']['name']
-		viewers = dictRegister['stream']['viewers']
-		if channel in ['pashabiceps', 'stormstudio_csgo_ru', 'esl_csgo', ]:
-			continue
-		try:
-			dictTimeline[channel][timestampkey].append(viewers)
-		except KeyError:
-			if channel not in dictTimeline:
-				dictTimeline[channel] = dict()
-			dictTimeline[channel][timestampkey] = list()
-			dictTimeline[channel][timestampkey].append(viewers)
-
-	data = list()
-	labels = sorted(settimeline)
-	for c in sorted(dictTimeline):
-		for t in labels:
-			try:
-				dictTimeline[c][t] = numpy.average(dictTimeline[c][t])
-			except KeyError:
-				dictTimeline[c][t] = 0
-		timeserie = [dictTimeline[c][t] for t in labels]
-		trace = go.Scatter(x=labels,y=timeserie,mode='lines+markers',name=c[0].upper()+c[1:])
-		data.append(trace)
-	layout = Layout(
-		autosize=True,
-		height=545,
-		width=1043,
-		margin=Margin(r=10, b=100,l=60),
-		plot_bgcolor='rgb(255, 255, 255)',
-		title='Twitch - ESL ESEA Finals',
-		xaxis=XAxis(autorange=True, title='Timeline', type='date'),
-		yaxis=YAxis(autorange=True, title='Twitch Viewers', type='linear')
-	)
-	figure = Figure(data=data, layout=layout)
-	py.plot(figure, filename='ESL ESEA Finals - Twitch Viewers')
-
-def plotlyTwitchViewers(filename):
-	houroffset = 2
-	dictTimeline = dict() # channel, timestamp, viewers
-	fileinput = open(filename, 'r')
-	settimeline = set()
-	for line in fileinput:
-		line = line.replace('\n', '')
-		dictRegister = eval(line)
-		timestampkey = dictRegister['timestamp']
-		timestampkey = timestampkey + datetime.timedelta(hours=houroffset)
-		timestampkey = timestampkey.strftime('%Y-%m-%d %H%:%M:00')
-		settimeline.add(timestampkey)
-		channel = dictRegister['stream']['channel']['name']
-		viewers = dictRegister['stream']['viewers']
-		if channel in ['pashabiceps']:
-			continue
-		try:
-			dictTimeline[channel][timestampkey].append(viewers)
-		except KeyError:
-			if channel not in dictTimeline:
-				dictTimeline[channel] = dict()
-			dictTimeline[channel][timestampkey] = list()
-			dictTimeline[channel][timestampkey].append(viewers)
-
-	data = list()
-	labels = sorted(settimeline)
-	for c in sorted(dictTimeline):
-		for t in labels:
-			try:
-				dictTimeline[c][t] = numpy.average(dictTimeline[c][t])
-			except KeyError:
-				dictTimeline[c][t] = 0
-	
-	dictData = dict()
-	for t in labels:
-		s = sum([dictTimeline[c][t] for c in dictTimeline])
-		dictData[t] = s
-	timeserie = [dictData[t] for t in labels]
-	trace = go.Scatter(x=labels,y=timeserie,mode='lines+markers',name='ESL ESEA Finals')
-	data.append(trace)
-	layout = Layout(
-		autosize=True,
-		height=545,
-		width=1043,
-		margin=Margin(r=10, b=100,l=60),
-		plot_bgcolor='rgb(255, 255, 255)',
-		title='Twitch - ESL ESEA Finals',
-		xaxis=XAxis(autorange=True, title='Timeline', type='date'),
-		yaxis=YAxis(autorange=True, title='Twitch Viewers', type='linear')
-	)
-	figure = Figure(data=data, layout=layout)
-	py.plot(figure, filename='Twitch - ESL ESEA Finals')
-
-
-
-
-
-
-
-def plotHltvViewers():
+def plotHltvStreams():
 	args = sys.argv
 	tracefile = open(args[2], 'r')
 	nLines = sum(1 for line in tracefile)
@@ -305,7 +205,7 @@ def plotHltvViewers():
 	# plt.xlim((0, len(data)+30))
 	# plt.show()
 
-def plotlyWordCloud():
+def plotTwiiterWordCloud():
 	args = sys.argv
 	tracefile = open(args[2], 'r')
 	nLines = sum(1 for line in tracefile)
@@ -359,7 +259,7 @@ def plotlyWordCloud():
 	plt.savefig(maskfile + '-wordcloud.png', dpi=500, bbox_inches='tight', pad_inches=0) # bbox_inches='tight'
 	plt.show()
 
-def plotlyPopularity():
+def plotTwitterPopularity():
 	args = sys.argv
 	filename = args[2]
 
@@ -465,7 +365,7 @@ def plotlyPopularity():
 	figure = Figure(data=[data], layout=layout)
 	py.plot(figure, filename='Twitter Mentions - ESL ESEA Finals')
 
-def plotlyTweetScatterMap():
+def plotTwitterLocationWordCloud():
 	args = sys.argv
 	filename = args[2]
 	tracefile = open(filename, 'r')
@@ -511,7 +411,7 @@ def plotlyTweetScatterMap():
 					fileout.write(t+'\n')
 	fileout.close()
 
-def exportValidTweets():
+def exportCleanTwitterDataset():
 	blacklist_terms = set()
 	blacklist_terms.add('giveaway')
 	blacklist_terms.add('sorteo')
@@ -538,7 +438,8 @@ def exportValidTweets():
 	fileout.close()
 	fileinput.close()
 
-# Calculate the confidence interval of array of data
+# Calculate the confidence interval of array of data.
+# OBS: I really dont remember where i found this code, but it not mine.
 def mean_confidence_interval(data, confidence=0.95):
 	a = 1.0 * numpy.array(data)
 	n = len(a)
@@ -552,30 +453,35 @@ def roundMetric(metric, offset):
 	metric = int(math.ceil(metric/offset)*offset)
 	return metric
 
+def printHeader():
+	print colorama.Fore.RED + colorama.Back.WHITE + 'CSGO Data Analysis'
+	print 'Kassio Machado - Canada/Brazil'
+	print 'Universit of Ottawa' + colorama.Fore.RESET + colorama.Back.RESET
+
+def processArgs():
+	printHeader()
+	args = sys.argv
+	method = args[1]
+	if method == 'hltv-streams':
+		plotHltvStreams()
+	elif method == 'wordcloud':
+		plotTwiiterWordCloud()
+	elif method = 'twitter-popularity':
+		plotTwitterPopularity()
+	elif method = 'twitter-location-wordcloud':
+		plotTwitterLocationWordCloud()
+	elif method = 'twitter-clean'
+		exportCleanTwitterDataset()
+	else:
+		print 'Sorry bro, I dont know the ' + method + ' method ¯\_(ツ)_/¯'
+
+
+if __name__ == "__main__":
+	processArgs()
 
 
 
 
-
-# args = sys.argv
-
-# filename = 'esl-esea-finals-twitch.data'
-# plotlyTwitchViewers(filename)
-# plotlyTwitchViewersAlternative(filename)
-
-filename = '2015-12-10-csgo-esl-esea-finals.csv'
-# plotlyPopularity(filename)
-# plotlyWordCloud(filename)
-
-
-
-
-
-# plotHltvViewers()
-# plotlyWordCloud()
-plotlyPopularity()
-# plotlyTweetScatterMap()
-# exportValidTweets()
 
 
 
