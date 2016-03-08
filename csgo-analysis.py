@@ -214,7 +214,6 @@ def plotTwiiterWordCloud():
 	dictTerms = dict()
 	blacklist = STOPWORDS.copy()
 	blacklist.add('rt')
-	# blacklist.add('000')
 	punctuation = set(string.punctuation)
 	punctuation.remove('@')
 	punctuation.remove('&')
@@ -227,7 +226,7 @@ def plotTwiiterWordCloud():
 				tweet = tweet.replace(p, '')
 			terms = tweet.split(' ')
 			for t in terms:
-				if (len(t) > 1) and ('http' not in t) and (t not in blacklist):
+				if (len(t) > 1) and 'http' not in t and (t not in blacklist):
 					try:
 						dictTerms[t] += 1
 					except KeyError:
@@ -251,7 +250,7 @@ def plotTwiiterWordCloud():
 	# print terms
 	maskfile = 'csgo-icon'
 	mask = imread(maskfile + '.jpg') # mask=mask
-	wc = WordCloud(mask=mask, background_color='black', width=1280, height=720).generate(terms) # max_words=10000
+	wc = WordCloud(mask=mask, background_color='white', width=1280, height=720).generate(terms) # max_words=10000
 	default_colors = wc.to_array()
 	plt.figure()
 	plt.imshow(default_colors)
@@ -464,13 +463,13 @@ def processArgs():
 	method = args[1]
 	if method == 'hltv-streams':
 		plotHltvStreams()
-	elif method == 'wordcloud':
+	elif method == 'twitter-wordcloud':
 		plotTwiiterWordCloud()
-	elif method = 'twitter-popularity':
+	elif method == 'twitter-popularity':
 		plotTwitterPopularity()
-	elif method = 'twitter-location-wordcloud':
+	elif method == 'twitter-location-wordcloud':
 		plotTwitterLocationWordCloud()
-	elif method = 'twitter-clean'
+	elif method == 'twitter-clean':
 		exportCleanTwitterDataset()
 	else:
 		print 'Sorry bro, I dont know the ' + method + ' method ¯\_(ツ)_/¯'
